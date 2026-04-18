@@ -6,13 +6,19 @@ export default function Home() {
       <div className="glass-panel p-8 sm:p-12 max-w-lg w-full text-center flex flex-col items-center">
         {/* Avatar */}
         <div className="w-28 h-28 rounded-full bg-white shadow-xl mb-6 border-4 border-white flex items-center justify-center text-slate-300 overflow-hidden relative">
-          {/* 預設載入 /avatar.jpeg，若無圖片使用者可自行上傳並命名為 avatar.jpeg */}
+          {/* 使用者指定的圖床，若載入失敗則退回使用本地的 avatar.jpeg */}
           <img 
-            src="/avatar.jpeg" 
+            src="https://i.ibb.co/VcyQhzxp/IMG-2061.jpg"
             alt="夢月 Avatar" 
             onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-              (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+              const target = e.target as HTMLImageElement;
+              // 避免無限觸發錯誤
+              if (target.src.includes('avatar.jpeg')) {
+                 target.style.display = 'none';
+                 target.nextElementSibling?.classList.remove('hidden');
+              } else {
+                 target.src = '/avatar.jpeg';
+              }
             }}
             className="w-full h-full object-cover"
           />
