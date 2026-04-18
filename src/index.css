@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+  
+  --color-slate-800: #5C677D; /* text-main */
+  --color-slate-700: #5C677D;
+  --color-slate-600: #7b889f;
+  --color-slate-500: #9DA8B9; /* text-light */
+  --color-slate-400: #9DA8B9;
+  
+  --color-pink-500: #F48FB1; /* accent-pink */
+  --color-pink-400: #F48FB1;
+  --color-pink-300: #FFD1DC; /* pastel-pink */
+  --color-pink-200: #FFD1DC;
+  
+  --color-blue-500: #81D4FA; /* accent-blue */
+  --color-blue-400: #81D4FA;
+  --color-blue-300: #B3E5FC; /* pastel-blue */
+  --color-blue-200: #B3E5FC;
+}
+
+@layer base {
+  body {
+    @apply min-h-screen antialiased;
+    background: linear-gradient(135deg, #fce4ec 0%, #e1f5fe 100%);
+    color: #5C677D;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply text-pink-500;
+  }
+}
+
+.glass-panel {
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+}
+
+.glass-input {
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50px;
+  border: 1px solid rgba(255,255,255,0.8);
+  @apply px-5 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all font-sans shadow-none;
+}
+textarea.glass-input, select.glass-input {
+  border-radius: 16px;
+}
+
+.glass-btn {
+  border-radius: 50px;
+  background: #FFFFFF;
+  border: 1px solid #81D4FA;
+  color: #81D4FA;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  @apply font-medium transition-all px-6 py-3 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 hover:shadow-md hover:bg-slate-50 flex items-center justify-center;
+}
+
+.btn-submit {
+  width: 100%;
+  border-radius: 16px;
+  border: none;
+  background: linear-gradient(135deg, #F48FB1, #81D4FA);
+  color: white;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(244, 143, 177, 0.3);
+  @apply transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center;
+}
+
+.tos-box {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  padding: 15px;
+  font-size: 13px;
+  line-height: 1.6;
+  height: 380px;
+  overflow-y: auto;
+  border: 1px solid rgba(255,255,255,0.4);
+}
+

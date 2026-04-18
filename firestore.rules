@@ -1,0 +1,93 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Phase 3: Primitives
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    function isValidId(id) { return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // Validation Helpers
+    function isValidGlobalSettings(data) {
+      return data.keys().hasAll(['isAccepting']) 
+          && data.keys().size() == 1
+          && data.isAccepting is bool;
+    }
+
+    function isValidCommission(data) {
+      return data.keys().hasAll(['nickname', 'contact', 'title', 'type', 'description', 'status', 'createdAt', 'updatedAt'])
+        && data.nickname is string && data.nickname.size() <= 100 && data.nickname.size() > 0
+        && data.contact is string && data.contact.size() <= 200 && data.contact.size() > 0
+        && data.title is string && data.title.size() <= 200 && data.title.size() > 0
+        && data.type is string && data.type.size() <= 50 && data.type.size() > 0
+        && data.description is string && data.description.size() <= 5000
+        && (data.keys().hasAny(['referenceUrl']) ? (data.referenceUrl is string && data.referenceUrl.size() <= 2000) : true)
+        && (data.keys().hasAny(['trackingId']) ? (data.trackingId is string && data.trackingId.size() <= 100) : true)
+        && data.status is string && data.status.matches('^[1-7]$')
+        && data.createdAt == request.time
+        && data.updatedAt == request.time;
+    }
+
+    function isValidCommissionUpdate(data, prev) {
+      return data.nickname is string && data.nickname.size() <= 100 && data.nickname.size() > 0
+        && data.contact is string && data.contact.size() <= 200 && data.contact.size() > 0
+        && data.title is string && data.title.size() <= 200 && data.title.size() > 0
+        && data.type is string && data.type.size() <= 50 && data.type.size() > 0
+        && data.description is string && data.description.size() <= 5000
+        && (data.keys().hasAny(['referenceUrl']) ? (data.referenceUrl is string && data.referenceUrl.size() <= 2000) : true)
+        && (data.keys().hasAny(['trackingId']) ? (data.trackingId is string && data.trackingId.size() <= 100) : true)
+        && data.status is string && data.status.matches('^[1-7]$')
+        && data.createdAt == prev.createdAt
+        && data.updatedAt == request.time;
+    }
+
+    function isValidTrackingAlias(data) {
+      return data.keys().hasAll(['commissionId'])
+          && data.keys().size() == 1
+          && data.commissionId is string && data.commissionId.size() <= 128;
+    }
+
+    // Rules
+    match /settings/global {
+      allow get: if true; 
+      allow list: if isAdmin();
+      allow update: if isAdmin() && incoming().diff(existing()).affectedKeys().hasOnly(['isAccepting']) && incoming().isAccepting is bool;
+      // create not usually needed for global singleton, but let admin init
+      allow create: if isAdmin() && isValidGlobalSettings(incoming());
+    }
+
+    match /commissions/{commissionId} {
+      allow get: if isValidId(commissionId);
+      allow list: if isAdmin();
+      allow create: if isValidId(commissionId) 
+                     && exists(/databases/$(database)/documents/settings/global)
+                     && get(/databases/$(database)/documents/settings/global).data.isAccepting == true
+                     && isValidCommission(incoming())
+                     && incoming().status == '1'; // Must start at submitted
+      
+      allow update: if isValidId(commissionId) && isAdmin() && isValidCommissionUpdate(incoming(), existing());
+      allow delete: if isValidId(commissionId) && isAdmin();
+    }
+
+    match /tracking_aliases/{trackingId} {
+      allow get: if isValidId(trackingId);
+      allow list: if isAdmin();
+      allow create: if isValidId(trackingId) && isAdmin() && isValidTrackingAlias(incoming());
+      allow update: if isValidId(trackingId) && isAdmin() && isValidTrackingAlias(incoming());
+      allow delete: if isValidId(trackingId) && isAdmin();
+    }
+
+    match /admins/{uid} {
+      allow get: if isAdmin() || (isSignedIn() && request.auth.uid == uid);
+      allow list: if isAdmin();
+      allow create: if false; // Add admins via Firebase Console manually for security
+    }
+  }
+}

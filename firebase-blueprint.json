@@ -1,0 +1,71 @@
+{
+  "entities": {
+    "GlobalSettings": {
+      "title": "Global Settings",
+      "description": "Global application configuration",
+      "type": "object",
+      "properties": {
+        "isAccepting": {
+          "type": "boolean"
+        }
+      },
+      "required": ["isAccepting"]
+    },
+    "Commission": {
+      "title": "Commission",
+      "description": "A commission request from a user",
+      "type": "object",
+      "properties": {
+        "nickname": { "type": "string" },
+        "contact": { "type": "string" },
+        "title": { "type": "string" },
+        "type": { "type": "string" },
+        "description": { "type": "string" },
+        "referenceUrl": { "type": "string" },
+        "status": { "type": "string" },
+        "trackingId": { "type": "string" },
+        "createdAt": { "type": "timestamp" },
+        "updatedAt": { "type": "timestamp" }
+      },
+      "required": ["nickname", "contact", "title", "type", "description", "status", "createdAt", "updatedAt"]
+    },
+    "TrackingAlias": {
+      "title": "Tracking Alias",
+      "description": "Maps an official tracking ID to the original commission ID",
+      "type": "object",
+      "properties": {
+        "commissionId": {
+          "type": "string"
+        }
+      },
+      "required": ["commissionId"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Admin users",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "/settings/global": {
+      "schema": "GlobalSettings",
+      "description": "Contains global settings like whether commissions are open"
+    },
+    "/commissions/{commissionId}": {
+      "schema": "Commission",
+      "description": "Contains all commission documents. ID is the temp tracking code"
+    },
+    "/tracking_aliases/{trackingId}": {
+      "schema": "TrackingAlias",
+      "description": "Maps official tracking IDs to commission document IDs (temp tracking codes)"
+    },
+    "/admins/{uid}": {
+      "schema": "Admin",
+      "description": "List of admin uids"
+    }
+  }
+}
